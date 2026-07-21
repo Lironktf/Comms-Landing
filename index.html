@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Comms · Agentic Commerce Trust Protocol</title>
+        <link rel="icon" type="image/png" href="./assets/logo.png" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            :root {
+                color-scheme: dark;
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+            }
+
+            html,
+            body {
+                min-height: 100%;
+            }
+
+            body {
+                font-family: "Libre Baskerville", Georgia,
+                    "Times New Roman", serif;
+                background: #000;
+                color: #fff;
+                overflow: hidden;
+            }
+
+            /* ---------- Rectangular top bar, built into the top ---------- */
+            .site-header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 100;
+                width: 100%;
+                height: 56px;
+                display: flex;
+                align-items: stretch;
+                justify-content: space-between;
+                background: rgba(0, 0, 0, 0.35);
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+            }
+
+            .site-header__brand {
+                display: flex;
+                align-items: center;
+                padding: 0 1rem;
+                border-right: 1px solid rgba(255, 255, 255, 0.14);
+            }
+
+            .site-header__logo {
+                height: 40px;
+                width: auto;
+                display: block;
+                mix-blend-mode: screen;
+            }
+
+            .site-nav {
+                display: flex;
+                align-items: stretch;
+            }
+
+            .site-nav__tab {
+                flex: 0 0 auto;
+                padding: 0 1.15rem;
+                border: 0;
+                border-left: 1px solid rgba(255, 255, 255, 0.14);
+                background: transparent;
+                color: rgba(255, 255, 255, 0.62);
+                font: inherit;
+                font-size: 0.7rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                cursor: pointer;
+                transition:
+                    background-color 140ms ease,
+                    color 140ms ease;
+            }
+
+            .site-nav__tab:hover {
+                color: #fff;
+                background: rgba(255, 255, 255, 0.08);
+            }
+
+            .site-nav__tab.is-active {
+                background: #fff;
+                color: #000;
+            }
+
+            .site-nav__tab:focus-visible {
+                outline: 2px solid #fff;
+                outline-offset: -3px;
+            }
+
+            /* ---------- Stage + smooth crossfade between panels ---------- */
+            .stage {
+                position: fixed;
+                inset: 0;
+                background: #000;
+            }
+
+            .panel {
+                position: absolute;
+                inset: 0;
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+                transition:
+                    opacity 900ms cubic-bezier(0.4, 0, 0.2, 1),
+                    visibility 900ms cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .panel.is-active {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: auto;
+            }
+
+            .panel__bg {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .panel__overlay {
+                position: absolute;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+            }
+
+            .panel__content {
+                position: relative;
+                z-index: 1;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                padding: 5rem 2rem 3rem;
+            }
+
+            .panel__inner {
+                width: min(100%, 72rem);
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+            }
+
+            .panel__eyebrow {
+                font-size: 0.72rem;
+                font-weight: 700;
+                letter-spacing: 0.22em;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.55);
+                margin-bottom: 1.1rem;
+            }
+
+            .panel__headline {
+                font-size: clamp(2.5rem, 8vw, 6rem);
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.005em;
+                line-height: 0.94;
+                color: #fff;
+                max-width: 16ch;
+            }
+
+            .panel__sub {
+                margin-top: 1.5rem;
+                font-size: clamp(1rem, 2vw, 1.35rem);
+                font-weight: 400;
+                line-height: 1.35;
+                color: rgba(255, 255, 255, 0.72);
+                max-width: 42ch;
+            }
+
+            /* Home: the single statement, centered */
+            .panel--home .panel__content {
+                justify-content: center;
+                text-align: center;
+            }
+
+            .panel--home .panel__inner {
+                align-items: center;
+                text-align: center;
+            }
+
+            .panel--home .panel__headline {
+                max-width: none;
+                letter-spacing: 0.01em;
+                white-space: nowrap;
+                font-size: clamp(1rem, 4.4vw, 4.75rem);
+            }
+
+            .panel__sub--home {
+                max-width: 54ch;
+                margin-top: 1.75rem;
+                line-height: 1.5;
+            }
+
+            .panel--home .arrow {
+                color: #fff;
+                font-weight: 400;
+                display: inline-block;
+                vertical-align: middle;
+                position: relative;
+                top: -0.12em;
+                margin: 0 0.1em;
+            }
+
+            @media (max-width: 720px) {
+                .site-header {
+                    height: auto;
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+                .site-header__brand {
+                    border-right: 0;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+                    padding: 0.7rem 1rem;
+                }
+                .site-nav {
+                    overflow-x: auto;
+                    scrollbar-width: none;
+                }
+                .site-nav::-webkit-scrollbar {
+                    display: none;
+                }
+                .site-nav__tab {
+                    padding: 0.7rem 0.9rem;
+                }
+                .site-nav__tab:first-child {
+                    border-left: 0;
+                }
+                .panel__content {
+                    padding: 8rem 1.25rem 2.5rem;
+                }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .panel {
+                    transition:
+                        opacity 200ms ease,
+                        visibility 200ms ease;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <header class="site-header" aria-label="Site header">
+            <a class="site-header__brand" href="#" aria-label="Comms home">
+                <img
+                    class="site-header__logo"
+                    src="./assets/logo.png"
+                    alt="Comms"
+                />
+            </a>
+            <nav class="site-nav" aria-label="Main navigation">
+                <button class="site-nav__tab is-active" data-panel="home" type="button">Home</button>
+                <button class="site-nav__tab" data-panel="identity" type="button">Identity</button>
+                <button class="site-nav__tab" data-panel="verify" type="button">Verify</button>
+                <button class="site-nav__tab" data-panel="policy" type="button">Policy</button>
+                <button class="site-nav__tab" data-panel="risk" type="button">Risk</button>
+                <button class="site-nav__tab" data-panel="receipts" type="button">Receipts</button>
+            </nav>
+        </header>
+
+        <div class="stage" id="stage">
+            <!-- HOME: the single statement -->
+            <section class="panel panel--home is-active" data-panel="home" data-anim="fade" aria-label="Home">
+                <img class="panel__bg" src="./assets/mountains.jpg" alt="" aria-hidden="true" />
+                <div class="panel__overlay" aria-hidden="true"></div>
+                <div class="panel__content">
+                    <div class="panel__inner">
+                        <h1 class="panel__headline">
+                            Probabilistic <span class="arrow">→</span> Deterministic
+                        </h1>
+                        <p class="panel__sub panel__sub--home">
+                            Comms doesn't allow your agent to fuck you over.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- IDENTITY -->
+            <section class="panel" data-panel="identity" data-anim="spin" aria-label="Identity">
+                <img class="panel__bg" src="./assets/identity.jpg" alt="" aria-hidden="true" />
+                <div class="panel__overlay" aria-hidden="true"></div>
+                <div class="panel__content">
+                    <div class="panel__inner">
+                        <p class="panel__eyebrow">Vendor Registry · onchain</p>
+                        <h2 class="panel__headline">One canonical identity</h2>
+                        <p class="panel__sub">
+                            Every merchant resolved to a single onchain record on Base: neutral,
+                            composable, equivocation-resistant. Deterministic IDs, domain + wallet
+                            uniqueness, terminal revocation.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VERIFY -->
+            <section class="panel" data-panel="verify" data-anim="bow" aria-label="Verify">
+                <img class="panel__bg" src="./assets/verify.jpg" alt="" aria-hidden="true" />
+                <div class="panel__overlay" aria-hidden="true"></div>
+                <div class="panel__content">
+                    <div class="panel__inner">
+                        <p class="panel__eyebrow">Verification · signed attestations</p>
+                        <h2 class="panel__headline">Proof, not claims</h2>
+                        <p class="panel__sub">
+                            Graduated verification levels backed by EIP-712 signed attestations.
+                            Facts carry their proofs; expiry, renewal and revocation are
+                            first-class. Never present a vibe as a verified fact.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- POLICY -->
+            <section class="panel" data-panel="policy" data-anim="flip" aria-label="Policy">
+                <img class="panel__bg" src="./assets/im3.jpg" alt="" aria-hidden="true" />
+                <div class="panel__overlay" aria-hidden="true"></div>
+                <div class="panel__content">
+                    <div class="panel__inner">
+                        <p class="panel__eyebrow">Cross-rail decision layer</p>
+                        <h2 class="panel__headline">One policy, every rail</h2>
+                        <p class="panel__sub">
+                            Define a spending policy once and enforce it across x402, cards, ACP and
+                            AP2, with Ed25519 signed enforcement tokens, FX-normalized budgets, and
+                            org &rarr; dept &rarr; agent delegation. Deny by default.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RISK -->
+            <section class="panel" data-panel="risk" data-anim="zoom" aria-label="Risk">
+                <img class="panel__bg" src="./assets/im4.jpg" alt="" aria-hidden="true" />
+                <div class="panel__overlay" aria-hidden="true"></div>
+                <div class="panel__content">
+                    <div class="panel__inner">
+                        <p class="panel__eyebrow">Risk engine · explainable</p>
+                        <h2 class="panel__headline">Risk you can read</h2>
+                        <p class="panel__sub">
+                            Deterministic, versioned scoring with reasons, evidence and an
+                            inputs-snapshot hash on every decision. Hard overrides for sanctions and
+                            revocation. A score you can audit, not a black box.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RECEIPTS -->
+            <section class="panel" data-panel="receipts" data-anim="slide" aria-label="Receipts">
+                <img class="panel__bg" src="./assets/receipts.jpg" alt="" aria-hidden="true" />
+                <div class="panel__overlay" aria-hidden="true"></div>
+                <div class="panel__content">
+                    <div class="panel__inner">
+                        <p class="panel__eyebrow">Receipts · tamper-evident</p>
+                        <h2 class="panel__headline">Every decision, on the record</h2>
+                        <p class="panel__sub">
+                            A per-org, hash-linked receipt chain. Every mutation is evented and
+                            auditable. Detection over blind prevention, following the model of
+                            Certificate Transparency.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <script>
+            (function () {
+                const tabs = document.querySelectorAll(".site-nav__tab");
+                const panels = document.querySelectorAll(".panel");
+                let current = "home";
+
+                function switchTo(id) {
+                    // Clicking the active tab returns home.
+                    if (id === current) id = "home";
+                    if (id === current) return;
+
+                    panels.forEach((p) =>
+                        p.classList.toggle("is-active", p.dataset.panel === id),
+                    );
+                    tabs.forEach((t) => {
+                        const active = t.dataset.panel === id;
+                        t.classList.toggle("is-active", active);
+                        t.setAttribute("aria-pressed", String(active));
+                    });
+
+                    current = id;
+                }
+
+                tabs.forEach((tab) => {
+                    tab.setAttribute(
+                        "aria-pressed",
+                        String(tab.dataset.panel === current),
+                    );
+                    tab.addEventListener("click", () =>
+                        switchTo(tab.dataset.panel),
+                    );
+                });
+            })();
+        </script>
+    </body>
+</html>
